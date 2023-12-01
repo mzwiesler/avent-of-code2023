@@ -35,9 +35,7 @@ def get_first_and_last_digit(
     get_last_digit: Callable[[str], str],
 ) -> str:
     first_digit = get_first_digit(line)
-    print(first_digit)
     last_digit = get_last_digit(line)
-    print(last_digit)
     return first_digit + last_digit
 
 
@@ -50,7 +48,6 @@ def calculate_sum(
     # only keep first and last entry of each line as integer
     calibration = []
     for line in lines:
-        print(line)
         calibration.append(
             int(get_first_and_last_digit(line, get_first_digit, get_last_digit))
         )
