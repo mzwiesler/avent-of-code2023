@@ -1,17 +1,8 @@
 from functools import reduce
-from typing import Tuple
 
-import numpy as np
+from part1 import TILES, Position, find_starting_directions, gen_next_position, parse
 
-from part1 import (
-    FROM_TO,
-    TILES,
-    TRAVEL,
-    Position,
-    find_starting_directions,
-    gen_next_position,
-    parse,
-)
+EDGES = ["L", "7", "J", "F"]
 
 
 def find_starting_position(grid: list[list[str]]) -> Position:
@@ -36,6 +27,7 @@ def find_starting_position(grid: list[list[str]]) -> Position:
     raise ValueError("No starting position found")
 
 
+# Option 1
 def get_num_internal(path: list[Position]):
     if len(path) < 2:
         return 0
@@ -70,20 +62,57 @@ def get_num_internal(path: list[Position]):
     return result
 
 
-def main(file_path: str) -> int:
-    lines = parse(file_path)
-    grid = [list(line) for line in lines]
-    starting_position = find_starting_position(grid)
+def get_path(starting_position: Position, grid: list[list[str]]) -> list[Position]:
     path = [starting_position]
     gen = gen_next_position(starting_position, grid)
     next_point = next(gen)
     while next_point.tile != "S":
         path.append(next_point)
         next_point = next(gen)
-    result = 0
-    for row in range(1, len(grid)):
-        result += get_num_internal([pos for pos in path if pos.coordinate[0] == row])
+    return path
+
+
+# Option 2: picks theorem with trapezoid formulae
+def get_edges(path: list[Position]) -> list[Position]:
+    result = []
+    for position in path:
+        if position.tile in EDGES:
+            result.append(position)
     return result
+
+
+def get_area(edges) -> float:
+    area = 0
+    for i in range(1, len(edges)):
+        area += gauss_trapez(edges[i - 1], edges[i])
+    return abs(area)
+
+
+def gauss_trapez(position1: Position, position2: Position) -> float:
+    return (position1.coordinate[0]) * (
+        position1.coordinate[1] - position2.coordinate[1]
+    )
+
+
+def picks_theorem(path, area) -> float:
+    return area - len(path) / 2 + 1
+
+
+def main(file_path: str) -> int:
+    lines = parse(file_path)
+    grid = [list(line) for line in lines]
+    starting_position = find_starting_position(grid)
+    path = get_path(starting_position, grid)
+    edges = get_edges(path)
+    len_grid = len(grid) - 1
+    for position in edges:
+        position.coordinate = (
+            len_grid - position.coordinate[0],
+            position.coordinate[1],
+        )
+    edges.append(edges[0])
+    area = get_area(edges)
+    return int(picks_theorem(path, area))
 
 
 if __name__ == "__main__":
